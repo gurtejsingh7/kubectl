@@ -67,8 +67,3 @@ spec:
                 configMapKeyRef:
                   name: synergychat-crawler-configmap
                   key: CRAWLER_KEYWORDS
-            - name: CRAWLER_DB_PATH
-              valueFrom: 
-                configMapKeyRef:
-                  name: synergychat-crawler-configmap
-                  key: CRAWLER_DB_PATH
