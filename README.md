@@ -1,5 +1,3 @@
----
-
 # 🚀 SynergyChat — Kubernetes Deployment
 
 Welcome to the Kubernetes deployment of **SynergyChat**, a multi-service application composed of a web frontend, API backend, and distributed crawler — fully containerized and orchestrated with Kubernetes.
@@ -229,15 +227,14 @@ However, this design keeps the architecture simple while demonstrating shared st
 
 # 🔍 What This Project Demonstrates
 
-✅ Multi-container Pods
-✅ Persistent volumes in Kubernetes
-✅ Internal service networking
-✅ Gateway API routing
-✅ ConfigMap-based configuration
-✅ Stateful workloads
-✅ Debugging container orchestration issues
-✅ Practical `kubectl` workflow
-
+- [x] Multi-container Pods
+- [x] Persistent volumes in Kubernetes
+- [x] Internal service networking
+- [x] Gateway API routing
+- [x] ConfigMap-based configuration
+- [x] Stateful workloads
+- [x] Debugging container orchestration issues
+- [x] Declarative infrastructure management
 ---
 
 # 🚀 Production Considerations
