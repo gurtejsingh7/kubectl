@@ -46,6 +46,119 @@ Use the `/stats` command to query keyword data from crawled books. The `crawler-
 
 ---
 
+# ⚙️ Prerequisites
+
+Before running this project you need the following installed:
+
+| Tool | Install Guide |
+|---|---|
+| Docker | https://docs.docker.com/engine/install/ |
+| Minikube | https://minikube.sigs.k8s.io/docs/start/ |
+| kubectl | https://kubernetes.io/docs/tasks/tools/ |
+
+---
+
+# 🛠️ Deployment Steps
+
+## 1️⃣ Quick Start (Recommended)
+
+Clone the repo and run:
+
+```bash
+git clone <your-repo-url>
+cd <your-repo>
+make run
+```
+
+When the script pauses and prompts you, open a **new terminal** and run:
+
+```bash
+minikube tunnel
+```
+
+The script will detect the tunnel and continue automatically.
+
+If you would like to remove everything:
+
+```bash
+make clean
+```
+
+---
+
+## 2️⃣ Manual Setup
+
+### Start Kubernetes
+
+```bash
+minikube start --driver=docker
+```
+
+### Start the tunnel
+
+In a separate terminal:
+
+```bash
+minikube tunnel
+```
+
+### Apply Manifests
+
+Manifests are organised into subdirectories and should be applied in dependency order:
+
+```bash
+# 1. Gateway infrastructure first
+kubectl apply -f manifests/gateway/
+
+# 2. Backend services
+kubectl apply -f manifests/api/
+kubectl apply -f manifests/crawler/
+
+# 3. Frontend
+kubectl apply -f manifests/web/
+```
+
+Or apply everything at once (order not guaranteed):
+
+```bash
+kubectl apply -f manifests/
+```
+
+---
+
+# 📁 Project Structure
+
+```
+.
+├── manifests/
+│   ├── gateway/
+│   │   ├── app-gatewayclass.yaml
+│   │   ├── app-gateway.yaml
+│   │   ├── api-httproute.yaml
+│   │   └── web-httproute.yaml
+│   ├── api/
+│   │   ├── api-configmap.yaml
+│   │   ├── api-deployment.yaml
+│   │   ├── api-service.yaml
+│   │   └── api-pvc.yaml
+│   ├── crawler/
+│   │   ├── crawler-configmap.yaml
+│   │   ├── crawler-deployment.yaml
+│   │   └── crawler-service.yaml
+│   └── web/
+│       ├── synchat-web-config.yaml
+│       ├── web-deployment.yaml
+│       └── web-service.yaml
+├── scripts/
+│   └── bootstrap.sh
+├── Makefile
+└── README.md
+```
+
+Manifests are grouped by service and applied in dependency order (gateway → api → crawler → web) to ensure Gateway resources exist before the HTTPRoutes that reference them.
+
+---
+
 # 🧠 High-Level Architecture
 
 The system is composed of three core services:
@@ -154,90 +267,6 @@ This approach provides:
 * Clear separation of concerns
 * Explicit routing rules
 * Production-style network design
-
----
-
-# 🛠️ Deployment Steps
-
-## 1️⃣ Quick Start (Recommended)
-
-The bootstrap script handles everything idempotently — safe to re-run at any time:
-
-```bash
-./scripts/bootstrap.sh
-```
-
-This will:
-- Start Minikube if not running
-- Install Envoy Gateway if not present
-- Create the `crawler` namespace if missing
-- Apply all manifests in dependency order
-- Automatically update `/etc/hosts` with the correct gateway IP
-- Launch the Minikube dashboard in a tmux session
-
----
-
-## 2️⃣ Manual Setup
-
-### Start Kubernetes
-
-```bash
-minikube start --driver=docker
-```
-
-### Apply Manifests
-
-Manifests are organised into subdirectories and should be applied in dependency order:
-
-```bash
-# 1. Gateway infrastructure first
-kubectl apply -f manifests/gateway/
-
-# 2. Backend services
-kubectl apply -f manifests/api/
-kubectl apply -f manifests/crawler/
-
-# 3. Frontend
-kubectl apply -f manifests/web/
-```
-
-Or apply everything at once (order not guaranteed):
-
-```bash
-kubectl apply -f manifests/
-```
-
----
-
-# 📁 Project Structure
-
-```
-.
-├── manifests/
-│   ├── gateway/
-│   │   ├── app-gatewayclass.yaml
-│   │   ├── app-gateway.yaml
-│   │   ├── api-httproute.yaml
-│   │   └── web-httproute.yaml
-│   ├── api/
-│   │   ├── api-configmap.yaml
-│   │   ├── api-deployment.yaml
-│   │   ├── api-service.yaml
-│   │   └── api-pvc.yaml
-│   ├── crawler/
-│   │   ├── crawler-configmap.yaml
-│   │   ├── crawler-deployment.yaml
-│   │   └── crawler-service.yaml
-│   └── web/
-│       ├── synchat-web-config.yaml
-│       ├── web-deployment.yaml
-│       └── web-service.yaml
-├── scripts/
-│   └── bootstrap.sh
-└── README.md
-```
-
-Manifests are grouped by service and applied in dependency order (gateway → api → crawler → web) to ensure Gateway resources exist before the HTTPRoutes that reference them.
 
 ---
 
