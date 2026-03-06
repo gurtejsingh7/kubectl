@@ -105,7 +105,9 @@ Resources:
 
 ### Traffic Flow
 
+```
 Client → Gateway → HTTPRoute → Service → Pod
+```
 
 This approach provides:
 
@@ -117,46 +119,84 @@ This approach provides:
 
 # 🛠️ Deployment Steps
 
-## 1️⃣ Start Kubernetes
+## 1️⃣ Quick Start (Recommended)
 
-Example with Minikube:
+The bootstrap script handles everything idempotently — safe to re-run at any time:
+
+```bash
+./scripts/bootstrap.sh
+```
+
+This will:
+- Start Minikube if not running
+- Install Envoy Gateway if not present
+- Create the `crawler` namespace if missing
+- Apply all manifests in dependency order
+- Launch the Minikube dashboard in a tmux session
+
+---
+
+## 2️⃣ Manual Setup
+
+### Start Kubernetes
 
 ```bash
 minikube start --driver=docker --network-plugin=cni --cpus=2 --memory=4096
 ```
 
+### Apply Manifests
+
+Manifests are organised into subdirectories and should be applied in dependency order:
+
+```bash
+# 1. Gateway infrastructure first
+kubectl apply -f manifests/gateway/
+
+# 2. Backend services
+kubectl apply -f manifests/api/
+kubectl apply -f manifests/crawler/
+
+# 3. Frontend
+kubectl apply -f manifests/web/
+```
+
+Or apply everything at once (order not guaranteed):
+
+```bash
+kubectl apply -f manifests/
+```
+
 ---
 
-## 2️⃣ Apply Manifests
+# 📁 Project Structure
 
-Apply in logical order:
-
-```bash
-kubectl apply -f app-gatewayclass.yaml
-kubectl apply -f app-gateway.yaml
-
-kubectl apply -f api-configmap.yaml
-kubectl apply -f crawler-configmap.yaml
-kubectl apply -f synchat-web-config.yaml
-
-kubectl apply -f api-pvc.yaml
-
-kubectl apply -f api-deployment.yaml
-kubectl apply -f crawler-deployment.yaml
-kubectl apply -f web-deployment.yaml
-
-kubectl apply -f api-service.yaml
-kubectl apply -f crawler-service.yaml
-kubectl apply -f web-service.yaml
-
-kubectl apply -f api-httproute.yaml
-kubectl apply -f web-httproute.yaml
 ```
-or simply
-
-```bash
-kubectl apply -f .
+.
+├── manifests/
+│   ├── gateway/
+│   │   ├── app-gatewayclass.yaml
+│   │   ├── app-gateway.yaml
+│   │   ├── api-httproute.yaml
+│   │   └── web-httproute.yaml
+│   ├── api/
+│   │   ├── api-configmap.yaml
+│   │   ├── api-deployment.yaml
+│   │   ├── api-service.yaml
+│   │   └── api-pvc.yaml
+│   ├── crawler/
+│   │   ├── crawler-configmap.yaml
+│   │   ├── crawler-deployment.yaml
+│   │   └── crawler-service.yaml
+│   └── web/
+│       ├── synchat-web-config.yaml
+│       ├── web-deployment.yaml
+│       └── web-service.yaml
+├── scripts/
+│   └── bootstrap.sh
+└── README.md
 ```
+
+Manifests are grouped by service and applied in dependency order (gateway → api → crawler → web) to ensure Gateway resources exist before the HTTPRoutes that reference them.
 
 ---
 
@@ -203,25 +243,9 @@ However, this design keeps the architecture simple while demonstrating shared st
 
 ---
 
-# 📁 Project Structure
+## Why Organise Manifests into Subdirectories?
 
-```
-.
-├── api-configmap.yaml
-├── api-deployment.yaml
-├── api-pvc.yaml
-├── api-service.yaml
-├── api-httproute.yaml
-├── crawler-configmap.yaml
-├── crawler-deployment.yaml
-├── crawler-service.yaml
-├── web-deployment.yaml
-├── web-service.yaml
-├── web-httproute.yaml
-├── app-gateway.yaml
-├── app-gatewayclass.yaml
-└── README.md
-```
+Grouping manifests by service makes the project easier to navigate and enables targeted `kubectl apply` calls per service. It also maps cleanly onto a Kustomize structure if the project grows to need it.
 
 ---
 
@@ -235,6 +259,8 @@ However, this design keeps the architecture simple while demonstrating shared st
 - [x] Stateful workloads
 - [x] Debugging container orchestration issues
 - [x] Declarative infrastructure management
+- [x] Idempotent bootstrap scripting
+
 ---
 
 # 🚀 Production Considerations
@@ -247,6 +273,7 @@ If this were deployed in a production environment:
 * Liveness and readiness probes would be added
 * Resource requests and limits would be enforced
 * Observability (metrics + logging) would be configured
+* Manifests would be managed with Helm or Kustomize
 
 This project focuses on mastering core Kubernetes primitives before introducing distributed system complexity.
 
