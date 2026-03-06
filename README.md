@@ -141,7 +141,7 @@ This will:
 ### Start Kubernetes
 
 ```bash
-minikube start --driver=docker --network-plugin=cni --cpus=2 --memory=4096
+minikube start --driver=docker 
 ```
 
 ### Apply Manifests
