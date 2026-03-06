@@ -33,4 +33,7 @@ spec:
           - name: API_DB_FILEPATH
             value: /persist/db.json
           - name: CRAWLER_BASE_URL
-            value: http://crawler-service.crawler.svc.cluster.local
+            valueFrom:
+              configMapKeyRef:
+                name: synergychat-api-configmap
+                key: CRAWLER_BASE_URL

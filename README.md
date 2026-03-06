@@ -6,6 +6,46 @@ This project demonstrates real-world Kubernetes architecture using Deployments, 
 
 ---
 
+# 💬 What is SynergyChat?
+
+SynergyChat is a real-time chat app with a built-in book data crawler. Users pick a username and send messages in a shared chat. The interesting part is the `/stats` command — it lets you query emotion keyword frequency across a library of crawled books in real time.
+
+The crawler runs in the background continuously scraping book data and indexing occurrences of emotion keywords like `love`, `hate`, `joy`, `sadness`, `anger`, `disgust`, `fear`, and `surprise`.
+
+---
+
+# 🖥️ Using the App
+
+Once deployed, open your browser and navigate to:
+
+```
+http://synchat.internal
+```
+
+### 1. Set a username
+
+Type a username in the top input field and start chatting.
+
+### 2. Send messages
+
+Type anything in the message box and hit **Send** to chat.
+
+### 3. Query book stats with `/stats`
+
+Use the `/stats` command to query keyword data from crawled books. The `crawler-bot` will respond with results.
+
+| Command | Description |
+|---|---|
+| `/stats` | Summary of all keywords across all books |
+| `/stats keywords=love` | Occurrences of "love" across all books |
+| `/stats keywords=love,hate` | Occurrences of both "love" and "hate" |
+| `/stats title=Frankenstein` | All keywords in the book "Frankenstein" |
+| `/stats keywords=love,hate title=Frankenstein` | "love" and "hate" in "Frankenstein" only |
+
+> **Note:** The crawler needs time to index books after first deployment. If `/stats` returns 0 matches, wait a few minutes and try again.
+
+---
+
 # 🧠 High-Level Architecture
 
 The system is composed of three core services:
@@ -132,6 +172,7 @@ This will:
 - Install Envoy Gateway if not present
 - Create the `crawler` namespace if missing
 - Apply all manifests in dependency order
+- Automatically update `/etc/hosts` with the correct gateway IP
 - Launch the Minikube dashboard in a tmux session
 
 ---
@@ -141,7 +182,7 @@ This will:
 ### Start Kubernetes
 
 ```bash
-minikube start --driver=docker 
+minikube start --driver=docker
 ```
 
 ### Apply Manifests

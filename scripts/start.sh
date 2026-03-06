@@ -61,7 +61,31 @@ kubectl apply --server-side -f "$MANIFEST_DIR/api/"
 kubectl apply --server-side -f "$MANIFEST_DIR/crawler/"
 kubectl apply --server-side -f "$MANIFEST_DIR/web/"
 
-# 5️⃣ Launch dashboard in tmux (restart if dead)
+# 5️⃣ Update /etc/hosts with current gateway IP
+log "Updating /etc/hosts with gateway IP..."
+GATEWAY_IP=$(kubectl get svc -n envoy-gateway-system \
+    -l gateway.envoyproxy.io/owning-gateway-name=app-gateway \
+    --output jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
+
+if [[ -z "$GATEWAY_IP" ]]; then
+    warn "Gateway IP not yet assigned. Waiting..."
+    kubectl wait --for=jsonpath='{.status.loadBalancer.ingress[0].ip}' \
+        svc -n envoy-gateway-system \
+        -l gateway.envoyproxy.io/owning-gateway-name=app-gateway \
+        --timeout=60s
+    GATEWAY_IP=$(kubectl get svc -n envoy-gateway-system \
+        -l gateway.envoyproxy.io/owning-gateway-name=app-gateway \
+        --output jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
+fi
+
+HOSTS="synchat.internal synchatapi.internal"
+
+# Remove old entries then add fresh ones
+sudo sed -i '/synchat.internal/d' /etc/hosts
+echo "$GATEWAY_IP  $HOSTS" | sudo tee -a /etc/hosts > /dev/null
+ok "Updated /etc/hosts → $GATEWAY_IP $HOSTS"
+
+# 6️⃣ Launch dashboard in tmux (restart if dead)
 SESSION_NAME="minikube-dashboard"
 log "Ensuring Minikube dashboard tmux session..."
 if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
@@ -77,7 +101,7 @@ else
     ok "Dashboard launched in tmux session '$SESSION_NAME'."
 fi
 
-# 6️⃣ Done
+# 7️⃣ Done
 echo ""
 ok "== Setup Complete! =="
 echo -e "${BLUE}Attach to dashboard:${NC}        ${YELLOW}tmux attach -t $SESSION_NAME${NC}"

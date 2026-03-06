@@ -7,6 +7,15 @@ spec:
   selector:
     app: synergychat-crawler
   ports:
-    - protocol: TCP
+    - name: crawler-1
+      protocol: TCP
       port: 80
       targetPort: 8080
+    - name: crawler-2
+      protocol: TCP
+      port: 8081
+      targetPort: 8081
+    - name: crawler-3
+      protocol: TCP
+      port: 8082
+      targetPort: 8082
