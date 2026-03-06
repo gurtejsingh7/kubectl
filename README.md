@@ -62,11 +62,10 @@ Before running this project you need the following installed:
 
 ## 1️⃣ Quick Start (Recommended)
 
-Clone the repo and run:
+Clone the repo and run following cmds:
 
 ```bash
-git clone <your-repo-url>
-cd <your-repo>
+cd kubectl
 make run
 ```
 
