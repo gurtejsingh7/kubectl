@@ -115,8 +115,7 @@ if [[ -z "$GATEWAY_IP" ]]; then
 fi
 
 HOSTS="synchat.internal synchatapi.internal"
-sudo sed -i '/synchat.internal/d' /etc/hosts
-echo "$GATEWAY_IP  $HOSTS" | sudo tee -a /etc/hosts > /dev/null
+sudo sh -c "grep -v 'synchat.internal' /etc/hosts > /tmp/hosts && printf '%s  %s\n' '$GATEWAY_IP' '$HOSTS' >> /tmp/hosts && cat /tmp/hosts > /etc/hosts"
 ok "Updated /etc/hosts → $GATEWAY_IP $HOSTS"
 
 # 8️⃣ Launch minikube dashboard in background

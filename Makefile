@@ -12,5 +12,5 @@ run:
 clean:
 	@sudo pkill -f "^minikube tunnel( |$$)" || true
 	@minikube stop && minikube delete
-	@sudo sed -i '/synchat\.internal/d;/synchatapi\.internal/d' /etc/hosts
+	@sudo sh -c "grep -v 'synchat.internal' /etc/hosts > /tmp/hosts && cat /tmp/hosts > /etc/hosts"
 	@echo "✔ Cluster cleaned up."
